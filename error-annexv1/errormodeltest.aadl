@@ -1,0 +1,89 @@
+package emtest
+
+public
+
+system Subsystem
+features
+  O: out data port;
+  A: in data port;
+  B: in data port;
+  C: in data port;
+  A_Failure_Detected: out event port;
+  B_Failure_Detected: out event port;
+end Subsystem;
+
+system implementation Subsystem.Notional
+end Subsystem.Notional;
+
+system Dependable_System 
+end Dependable_System;
+
+system implementation Dependable_System.Notional 
+subcomponents
+    S1: system Subsystem.Notional in modes (S123, S124, S134);
+    S2: system Subsystem.Notional in modes (S123, S234, S124);
+    S3: system Subsystem.Notional in modes (S123, S134, S234);
+    S4: system Subsystem.Notional in modes (S124, S134, S234);
+connections
+    port S2.O -> S1.A in modes (S123);
+     port S3.O -> S1.B in modes (S123);
+     port S1.O -> S2.A in modes (S123);
+     port S3.O -> S2.B in modes (S123);
+     port S1.O -> S3.A in modes (S123);
+     port S2.O -> S3.B in modes (S123);
+
+     port S2.O -> S4.A in modes (S234);
+     port S3.O -> S4.B in modes (S234);
+     port S4.O -> S2.A in modes (S234);
+     port S3.O -> S2.B in modes (S234);
+     port S4.O -> S3.A in modes (S234);
+     port S2.O -> S3.B in modes (S234);
+
+     port S4.O -> S1.A in modes (S134);
+     port S3.O -> S1.B in modes (S134);
+     port S1.O -> S4.A in modes (S134);
+     port S3.O -> S4.B in modes (S134);
+     port S1.O -> S3.A in modes (S134);
+     port S4.O -> S3.B in modes (S134);
+
+     port S2.O -> S1.A in modes (S124);
+     port S4.O -> S1.B in modes (S124);
+     port S1.O -> S2.A in modes (S124);
+     port S4.O -> S2.B in modes (S124);
+     port S1.O -> S4.A in modes (S124);
+     port S2.O -> S4.B in modes (S124);
+modes
+    S123: initial mode;
+    S234: mode; S134: mode; S124: mode;
+--    Fail_1: 
+    S123 -[ S2.A_Failure_Detected, S3.A_Failure_Detected ]-> S234;
+--    Fail_2: 
+    S123 -[ S1.A_Failure_Detected, S3.B_Failure_Detected ]-> S134;
+--    Fail_3: 
+    S123 -[ S1.B_Failure_Detected, S2.B_Failure_Detected ]-> S124;
+annex error_model {** 
+	
+   -- MODEL => My_Models::Example.Notional;
+    Model_Hierarchy => Error_Free when 2 ormore (S1[Error_Free],
+              S2[Error_Free],
+              S3[Error_Free],
+              S4[Error_Free])
+           and 1 orless (S1[Fail_Unknown],
+              S2[Fail_Unknown],
+              S3[Fail_Unknown],
+              S4[Fail_Unknown]),
+           Fail_Unknown when others;
+    Fail_1.Vote_Transition =>
+                     S2.A_Failure_Detected[Error_Free,Bad_Data]
+              and S3.A_Failure_Detected[Error_Free,Bad_Data];
+    Fail_2.Vote_Transition =>
+                   S1.A_Failure_Detected[Error_Free,Bad_Data]
+            and S3.B_Failure_Detected[Error_Free,Bad_Data];
+    Fail_3.Vote_Transition =>
+                    S1.B_Failure_Detected[Error_Free,Bad_Data]
+            and S2.B_Failure_Detected[Error_Free,Bad_Data];
+    Report => Error_Free;
+**};
+end Dependable_System.Notional;
+
+end emtest;
