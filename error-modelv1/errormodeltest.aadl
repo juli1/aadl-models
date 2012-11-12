@@ -63,8 +63,8 @@ modes
     S123 -[ S1.B_Failure_Detected, S2.B_Failure_Detected ]-> S124;
 annex error_model {** 
 	
-   -- MODEL => My_Models::Example.Notional;
-    Model_Hierarchy => Error_Free when 2 ormore (S1[Error_Free],
+   MODEL => My_Models::dependent.general;
+   Model_Hierarchy => Error_Free when 2 ormore (S1 [ Error_Free ],
               S2[Error_Free],
               S3[Error_Free],
               S4[Error_Free])

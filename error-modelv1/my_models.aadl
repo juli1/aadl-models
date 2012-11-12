@@ -1,0 +1,62 @@
+package My_Models
+public
+  annex Error_Model {**
+                
+        error model dependent
+        features
+                Error_Free: initial error state;
+                Failed: error state;
+                Fail: error event {Occurrence => poisson lambda};
+                Repair: error event {Occurrence => poisson mu};
+                FailedVisible: in error propagation {Occurrence => fixed p};
+        end dependent;
+
+        error model implementation dependent.general
+        transitions
+                Error_Free -[ Fail ]-> Failed;
+                Failed -[ Repair ]-> Error_Free;
+                Error_Free -[ in FailedVisible ]-> Failed;
+                Failed-[out FailedVisible]-> Failed;
+        end dependent.general;
+
+        error model TransientPermanent
+        features
+                Error_Free: initial error state;
+                Activation_Fault, Transient_Error:error state; 
+                Permanent_Error: error state;
+                Fault: error event {Occurrence => poisson lambdah};
+                Permanent_Fault: error event {Occurrence => fixed ph};
+                Transient_Fault: error event {Occurrence => fixed 1-ph};
+                Repair_Transient: error event {Occurrence => poisson deltah};
+        end TransientPermanent;
+
+        error model implementation TransientPermanent.general
+        transitions
+                Error_Free-[Fault]-> Activation_Fault;
+                Activation_Fault-[Transient_Fault]-> Transient_Error;
+                Activation_Fault-[Permanent_Fault]-> Permanent_Error;
+                Transient_Error -[Repair_Transient]-> Error_Free;
+        end TransientPermanent.general;
+
+        error model basic
+    features
+        Error_Free: initial error state;   
+        Failed: error state;
+        Crashed: error state;
+        Fail: error event {occurrence => poisson 10e-3};
+        Repair: error event {occurrence => poisson 0.0001};
+        Error1: in out error propagation {occurrence => fixed p};
+        Error2: in out error propagation {Occurrence => fixed 0.2-p};
+    end basic;
+    
+    error model implementation basic.nominal
+    transitions
+        Error_Free -[Fail]-> Failed;
+        Failed -[Repair]-> Error_Free;
+        Error_Free -[in Error1]-> Failed;
+        Failed -[out Error1]-> Failed;
+        Error_Free-[in Error2]->Failed;
+        Failed-[out Error2]->Crashed;
+    end basic.nominal;
+        **};
+end My_Models;

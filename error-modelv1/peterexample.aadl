@@ -1,0 +1,71 @@
+package peterexample
+public
+--- Peter
+data signal
+end signal;
+
+thread peter
+  features
+    pe: in event port;
+    pd: out data port signal;
+end peter;
+
+thread implementation peter.default
+  annex error_model {**
+    MODEL => errormodels::twostate.impl;
+    guard_in => 
+      p1 when pe[st2] and self
+    applies to pe;
+    derived_state_mapping => 
+      st2 when pe and (pe or pe[st1]);
+    model_hierarchy => Abstract;
+**};
+end peter.default;
+
+thread pierre
+  features
+    pd: in data port signal;
+    pe: out event port;
+end pierre;
+
+thread implementation pierre.default
+end pierre.default;
+
+-- pet
+process sys
+  features
+    pd: in event port;
+    pe: out event port;
+end sys;
+
+-- this process implementation will receive a Security_Level property value
+-- to be the maximum of the subcomponent T1 and T2 values
+process implementation sys.impl
+  subcomponents
+    T1: thread peter.default;
+    T2: thread pierre.default;
+  connections
+    -- we have two connections, one from T1 to T2, and one in the opposite direction
+    -- one of them violates the security level constraint
+    c1: port pd -> T1.pe;
+    c2: port T2.pe -> pe;
+end sys.impl;
+
+system main
+end main;
+
+-- this system implementation will receive a Security_Level property value
+-- to be the maximum of the subcomponetn values, i.e., the process value
+system implementation main.i
+  subcomponents
+    p1: process sys.impl;
+    p2: process sys.impl;
+  connections
+    con1:  port p1.pe -> p2.pd;
+    con2:  port p2.pe -> p1.pd;
+  annex error_model {**
+    model => errormodels::twostate.impl applies to con1;
+    model => errormodels::twostate.impl applies to con2;
+**};
+end main.i;
+end peterexample;

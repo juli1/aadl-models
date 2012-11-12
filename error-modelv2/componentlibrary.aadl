@@ -23,7 +23,7 @@ component error behavior
 use types ErrorModelLibrary;
 use behavior ErrorModelLibrary::ThreeErrorStates;
 	transitions
-		Operational -[inport1 { BadValue }]-> BadValueState;
+		Operational -[inport1{ BadValue }]-> BadValueState;
 		Operational -[inport1 {NoValue} or processor {NoService}]-> NoValueState;
 	propagations
 		BadValueState -[ ]-> outport2 { BadValue};
